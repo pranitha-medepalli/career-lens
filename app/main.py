@@ -12,7 +12,7 @@ app = FastAPI(
 
 frontend_url = os.getenv(
     "FRONTEND_URL",
-    "http://localhost:5173"
+    "https://pranitha-medepalli.github.io/career-lens/"
 )
 
 
