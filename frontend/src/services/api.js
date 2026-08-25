@@ -11,20 +11,44 @@ export const analyzeResumeRoles = async (file) => {
 
   formData.append("file", file);
 
-  const response = await API.post(
-    "/resume/role-analysis",
-    formData
-  );
+  try {
 
-  return response.data;
+    const response = await API.post(
+      "/resume/role-analysis",
+      formData
+    );
+
+    return response.data;
+
+  } catch (error) {
+
+    console.error(
+      "Resume analysis API error:",
+      error
+    );
+
+    console.error(
+      "API URL:",
+      API.defaults.baseURL
+    );
+
+    throw error;
+  }
 };
 
+
 export const getAnalysisHistory = async () => {
-  const response = await API.get("/history");
+
+  const response = await API.get(
+    "/history"
+  );
+
   return response.data.history;
 };
 
+
 export const getAnalysis = async (id) => {
+
   const response = await API.get(
     `/history/${id}`
   );
@@ -32,12 +56,15 @@ export const getAnalysis = async (id) => {
   return response.data;
 };
 
+
 export const deleteAnalysis = async (id) => {
+
   const response = await API.delete(
     `/history/${id}`
   );
 
   return response.data;
 };
+
 
 export default API;
