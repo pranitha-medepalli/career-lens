@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import API from "../services/api";
 
 
 function JobMatch({ resumeFile }) {
@@ -20,20 +20,16 @@ function JobMatch({ resumeFile }) {
   const analyzeJob = async () => {
 
     if (!resumeFile) {
-
       setError(
         "Please upload your resume first."
       );
-
       return;
     }
 
     if (!jobDescription.trim()) {
-
       setError(
         "Please paste a job description."
       );
-
       return;
     }
 
@@ -55,23 +51,19 @@ function JobMatch({ resumeFile }) {
         jobDescription
       );
 
-      const response =
-        await axios.post(
-          "http://127.0.0.1:8000/job/match",
-          formData,
-          {
-            headers: {
-              "Content-Type":
-                "multipart/form-data",
-            },
-          }
-        );
+      const response = await API.post(
+        "/job/match",
+        formData
+      );
 
       setResult(response.data);
 
     } catch (err) {
 
-      console.error(err);
+      console.error(
+        "Job match error:",
+        err
+      );
 
       setError(
         err?.response?.data?.detail ||
@@ -106,8 +98,8 @@ function JobMatch({ resumeFile }) {
           </h2>
 
           <p>
-            See where you match, where you have gaps,
-            and exactly what you can improve.
+            See where you match, where you have
+            gaps, and exactly what you can improve.
           </p>
 
         </div>
@@ -121,7 +113,7 @@ function JobMatch({ resumeFile }) {
 
       <div className="job-match-grid">
 
-        {/* Resume Card */}
+        {/* Resume */}
 
         <div className="job-input-card resume-card">
 
@@ -165,7 +157,7 @@ function JobMatch({ resumeFile }) {
         </div>
 
 
-        {/* Job Description Card */}
+        {/* Job Description */}
 
         <div className="job-input-card">
 
@@ -174,21 +166,14 @@ function JobMatch({ resumeFile }) {
           </div>
 
           <textarea
-
             className="job-description-input"
-
             value={jobDescription}
-
             onChange={(event) =>
               setJobDescription(
                 event.target.value
               )
             }
-
-            placeholder={
-              "Paste the complete job description here..."
-            }
-
+            placeholder="Paste the complete job description here..."
           />
 
           <div className="character-count">
@@ -201,16 +186,19 @@ function JobMatch({ resumeFile }) {
 
 
       {/* =========================
-          ACTION
+          ERROR
       ========================= */}
 
       {error && (
-
         <div className="error-box">
           {error}
         </div>
-
       )}
+
+
+      {/* =========================
+          ANALYZE
+      ========================= */}
 
       <button
         className="analyze-job-button"
@@ -240,9 +228,9 @@ function JobMatch({ resumeFile }) {
       ========================= */}
 
       {result && (
-
-        <MatchResults result={result} />
-
+        <MatchResults
+          result={result}
+        />
       )}
 
     </div>
@@ -251,7 +239,7 @@ function JobMatch({ resumeFile }) {
 
 
 /* =================================================
-   RESULTS
+   MATCH RESULTS
 ================================================= */
 
 function MatchResults({ result }) {
@@ -259,16 +247,18 @@ function MatchResults({ result }) {
   const score =
     result.overall_match_score || 0;
 
-  let scoreLabel = "Needs Improvement";
+  let scoreLabel =
+    "Needs Improvement";
 
   if (score >= 80) {
 
-    scoreLabel = "Strong Match";
+    scoreLabel =
+      "Strong Match";
 
   } else if (score >= 60) {
 
-    scoreLabel = "Good Match";
-
+    scoreLabel =
+      "Good Match";
   }
 
 
@@ -306,6 +296,7 @@ function MatchResults({ result }) {
         <div className="match-summary-panel">
 
           <div className="summary-item">
+
             <strong>
               {
                 result.matching_summary
@@ -316,9 +307,12 @@ function MatchResults({ result }) {
             <span>
               Strong Matches
             </span>
+
           </div>
 
+
           <div className="summary-item">
+
             <strong>
               {
                 result.matching_summary
@@ -329,9 +323,12 @@ function MatchResults({ result }) {
             <span>
               Partial Matches
             </span>
+
           </div>
 
+
           <div className="summary-item">
+
             <strong>
               {
                 result.matching_summary
@@ -342,6 +339,7 @@ function MatchResults({ result }) {
             <span>
               Not Verifiable
             </span>
+
           </div>
 
         </div>
@@ -434,9 +432,7 @@ function MatchResults({ result }) {
           BULLET OPTIMIZER
       ========================= */}
 
-      {result
-        .bullet_optimizations
-        ?.length > 0 && (
+      {result.bullet_optimizations?.length > 0 && (
 
         <section className="job-result-section">
 
@@ -506,6 +502,14 @@ function RequirementCard({
   }
 
 
+  const displayStatus = (
+    requirement.status || "UNKNOWN"
+  ).replaceAll(
+    "_",
+    " "
+  );
+
+
   return (
     <div className="requirement-card">
 
@@ -526,15 +530,13 @@ function RequirementCard({
         <span
           className={`status-pill ${statusClass}`}
         >
-          {requirement.status
-            .replaceAll("_", " ")}
+          {displayStatus}
         </span>
 
       </div>
 
 
-      {requirement.matched_skills
-        ?.length > 0 && (
+      {requirement.matched_skills?.length > 0 && (
 
         <div className="tag-container">
 
@@ -544,6 +546,28 @@ function RequirementCard({
               <span
                 className="tag tag-success"
                 key={skill}
+              >
+                {skill}
+              </span>
+
+            )
+          )}
+
+        </div>
+
+      )}
+
+
+      {requirement.missing_skills?.length > 0 && (
+
+        <div className="tag-container">
+
+          {requirement.missing_skills.map(
+            (skill) => (
+
+              <span
+                className="tag tag-warning"
+                key={`missing-${skill}`}
               >
                 {skill}
               </span>
@@ -569,9 +593,13 @@ function RequirementCard({
       </div>
 
 
-      <p className="recommendation">
-        {requirement.recommendation}
-      </p>
+      {requirement.recommendation && (
+
+        <p className="recommendation">
+          {requirement.recommendation}
+        </p>
+
+      )}
 
     </div>
   );
@@ -593,7 +621,9 @@ function ImprovementCard({
 
         <span
           className={`priority-badge ${
-            item.priority.toLowerCase()
+            (
+              item.priority || "LOW"
+            ).toLowerCase()
           }`}
         >
           {item.priority}
@@ -605,9 +635,11 @@ function ImprovementCard({
 
       </div>
 
+
       <h3>
         {item.requirement}
       </h3>
+
 
       <p>
         {item.message}
@@ -645,6 +677,7 @@ function BulletCard({
       );
 
     }
+
   };
 
 

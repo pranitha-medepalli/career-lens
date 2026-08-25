@@ -3,7 +3,7 @@ import {
 } from "react";
 
 import {
-  BrowserRouter,
+  HashRouter,
   Routes,
   Route,
   NavLink
@@ -92,7 +92,7 @@ function App() {
 
   return (
 
-    <BrowserRouter>
+    <HashRouter>
 
       <div className="app">
 
@@ -261,7 +261,7 @@ function App() {
 
       </div>
 
-    </BrowserRouter>
+    </HashRouter>
 
   );
 }
