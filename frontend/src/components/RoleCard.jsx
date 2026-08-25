@@ -1,3 +1,5 @@
+import React from "react";
+
 function RoleCard({ role, rank }) {
   const score = role.match_score;
 

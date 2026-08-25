@@ -1,3 +1,5 @@
+import React from "react";
+
 function SkillCard({ category, skills }) {
   return (
     <div className="skill-card">
